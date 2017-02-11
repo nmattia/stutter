@@ -8,7 +8,6 @@ dependencies:
   cache_directories:
   - "~/.stack"
   - "~/stutter/.stack-work"
-  - "~/stutter/test-data"
 
   override:
   # Install stack
