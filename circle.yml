@@ -1,0 +1,35 @@
+machine:
+  environment:
+    # Add stack to the PATH
+    PATH: ~/.local/bin:$PATH
+    TASTY_REPORTS: ${CIRCLE_TEST_REPORTS}/tasty
+
+dependencies:
+  cache_directories:
+  - "~/.stack"
+  - "~/stutter/.stack-work"
+  - "~/stutter/test-data"
+
+  override:
+  # Install stack
+  - mkdir -p ~/.local/bin
+  - curl -L --retry 3 https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+
+  # Setup stack
+  - stack setup
+
+  # Build dependencies
+  - stack build --test --only-dependencies
+
+  # Prepare test reports directories
+  - mkdir -p ${TASTY_REPORTS}
+
+test:
+  override:
+
+  # Run tests and export reports (see tasty-ant-xml package)
+  - stack test --pedantic --test-arguments="--xml=${TASTY_REPORTS}/junit.xml"
+  - stack build --pedantic
+
+  # Make sure there are no trailing whitespaces in Haskell code
+  - "! grep -r '[[:blank:]]$' --include='*.hs' ."
