@@ -49,17 +49,14 @@ bar # stutter was here
 baz # stutter was here
 ```
 
-And work as a `paste` replacement:
+And read from `stdin`:
 
 ``` shell
-$ stutter 'Check this out, paste: @test.txt'
+$ cat test.txt | stutter 'Check this out, paste: @-'
 Check this out, paste: foo
 Check this out, paste: bar
 Check this out, paste: baz
 ```
-
-_note: `stdin` support is on its way_
-
 
 Stutter also likes ranges:
 
