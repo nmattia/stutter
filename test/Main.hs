@@ -10,7 +10,7 @@ import qualified Data.Attoparsec.Text as Atto
 import qualified Test.Tasty as Tasty
 import qualified Test.Tasty.HUnit as Tasty
 
-import Stutter.Producer (Range(..), ProducerGroup (..))
+import Stutter.Producer (Range(..), ProducerGroup_ (..))
 
 import qualified Stutter.Parser as Stutter
 
@@ -76,4 +76,7 @@ parserTests =
     , Tasty.testCase "parses file" $
         (Right (PFile "test.txt"))                    @=?
         (Atto.parseOnly Stutter.parseGroup "@test.txt")
+    , Tasty.testCase "parses stdin ref" $
+        (Right $ PStdin ())                 @=?
+        (Atto.parseOnly Stutter.parseGroup "@-")
     ]
