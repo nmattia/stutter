@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+set -e
+
+PROJECT_ROOT=$(dirname $0)/..
+STUTTER_TEST_DATA_DIR=${PROJECT_ROOT}/test-data/
+mkdir -p ${STUTTER_TEST_DATA_DIR}
+
+if [ ! -f test-data/big_file ]; then
+    while true; do echo "foo"; done \
+        | head -n 10000             \
+        > ${STUTTER_TEST_DATA_DIR}/big_file
+fi
+
+STUTTER_EXE=${STUTTER_EXE:-"stack exec stutter -- +RTS -K1k -RTS"}
+
+${STUTTER_EXE} +RTS -M32M -RTS 'foo+bar'
+
+echo "test constant space one stdin (output 10,000,000 rows)"
+while true; do echo "foo"; done                 \
+    | head -n 10000000                          \
+    | ${STUTTER_EXE} +RTS -M4M -RTS '(@-)-bar' \
+    > /dev/null
+
+echo "test constant space big file (output 10,000 rows)"
+${STUTTER_EXE} +RTS -M4M -RTS "(@${STUTTER_TEST_DATA_DIR}/big_file)" > /dev/null
+
+echo "test constant space big file product (output 10,000,000 rows)"
+${STUTTER_EXE} +RTS -M4M -RTS "(@${STUTTER_TEST_DATA_DIR}/big_file)(@${STUTTER_TEST_DATA_DIR}/big_file)" > /dev/null

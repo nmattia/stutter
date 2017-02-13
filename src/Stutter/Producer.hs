@@ -1,11 +1,14 @@
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveFoldable #-}
+{-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveTraversable #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE RankNTypes #-}
 
 module Stutter.Producer where
 
 import Control.Monad.IO.Class
+import Control.Monad.State
 import Control.Monad.Trans.Resource (MonadResource)
 import Data.Conduit
 import Data.Monoid
@@ -33,9 +36,14 @@ data ProducerGroup_ a
 type ProducerGroup = ProducerGroup_ BL.ByteString
 
 prepareStdin :: ProducerGroup_ () -> IO (ProducerGroup_ BL.ByteString)
-prepareStdin = traverse f
+prepareStdin p = evalStateT (traverse f p) Nothing
   where
-    f () = BL.hGetContents stdin
+    f () = get >>= \case
+      Just bs -> return bs
+      Nothing -> do
+        bs <- liftIO $ BL.hGetContents stdin
+        modify (const $ Just bs)
+        return bs
 
 produceRanges :: (Monad m) => [Range] -> Producer m T.Text
 produceRanges = CL.yieldMany

@@ -30,5 +30,8 @@ test:
   - stack test --pedantic --test-arguments="--xml=${TASTY_REPORTS}/junit.xml"
   - stack build --pedantic
 
+  # memory behavior tests
+  - ./script/test
+
   # Make sure there are no trailing whitespaces in Haskell code
   - "! grep -r '[[:blank:]]$' --include='*.hs' ."
