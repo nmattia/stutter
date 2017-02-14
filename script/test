@@ -44,5 +44,6 @@ echo '(5,000 x "foo\n")'
 echo "output: 25,000,000 rows, 175,000,000 chars"
 echo '(5,000 x 5,000 x "foofoo\n")'
 echo "heap size: 2M"
+echo "Print every 1,000,000 elements to keep CI alive:"
 ${STUTTER_EXE} +RTS -M2M -RTS "(@${STUTTER_TEST_DATA_DIR}/big_file)(@${STUTTER_TEST_DATA_DIR}/big_file)" \
-    | wc -c
+    | awk 'NR%1000000==0'
