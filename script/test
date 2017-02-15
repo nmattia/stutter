@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+set -e
+
+PROJECT_ROOT=$(dirname $0)/..
+STUTTER_TEST_DATA_DIR=${PROJECT_ROOT}/test-data/
+
+echo "prepare test data"
+mkdir -p ${STUTTER_TEST_DATA_DIR}
+
+m_by_n() {
+    local str=$(while true; do echo -n "a"; done | head -c $2)
+    while true; do echo $str; done | head -n $1
+}
+
+
+# We test constant memory behavior w.r.t the file size, so what matters is
+# n_rows x n_cols. However we prefer a wider file (over a long one) to minimize
+# independent file reads.
+echo "prepare file with 250 rows and 1000 colums"
+echo "(250,000 chars = 245K)"
+echo "heap size: 2M"
+if [ ! -f test-data/big_file ]; then
+    m_by_n 250 1000 > ${STUTTER_TEST_DATA_DIR}/big_file
+fi
+
+STUTTER_EXE=${STUTTER_EXE:-"stack exec stutter -- +RTS -K1k -RTS"}
+
+echo "test constant space one stdin"
+echo "input: 1,000,000 rows, 10 cols"
+echo "(10,000,000 chars = 9.7M)"
+echo "heap size: 2M"
+m_by_n 1000000 10 \
+    | ${STUTTER_EXE} +RTS -M2M -RTS '(@-)-bar' \
+    | wc -c
+
+echo "test constant space file read"
+echo "input: 250 rows, 1,000 cols"
+echo "(250,000 chars = 245K)"
+echo "heap size: 2M"
+${STUTTER_EXE} +RTS -M2M -RTS "(@${STUTTER_TEST_DATA_DIR}/big_file)" \
+    | wc -c
+
+echo "test constant space file product"
+echo "input: 250 rows, 1,000 cols"
+echo "(250,000 chars = 245K)"
+echo "(total of product: 58M)"
+echo "heap size: 2M"
+${STUTTER_EXE} +RTS -M2M -RTS "(@${STUTTER_TEST_DATA_DIR}/big_file)(@${STUTTER_TEST_DATA_DIR}/big_file)" \
+    | wc -c

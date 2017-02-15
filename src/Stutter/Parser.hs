@@ -10,7 +10,9 @@ import Data.Attoparsec.Text ((<?>))
 import qualified Data.Attoparsec.Text as Atto
 import qualified Data.Text as T
 
-import Stutter.Producer
+import Stutter.Producer hiding (ProducerGroup)
+
+type ProducerGroup = ProducerGroup_ ()
 
 -------------------------------------------------------------------------------
 -- Text
@@ -55,12 +57,21 @@ parseGroup = (<?> "producer group") $
 parseUnit :: Atto.Parser ProducerGroup
 parseUnit = (<?> "unary producer") $
     PRanges <$> parseRanges <|>
-    PFile <$> parseFile     <|>
+    parseHandle             <|>
     PText <$> parseText     <|>
     bracketed parseGroup
   where
     bracketed :: Atto.Parser a -> Atto.Parser a
     bracketed p = Atto.char '(' *> p <* Atto.char ')'
+
+
+-- | Parse a Handle-like reference, preceded by an @\@@ sign. A single dash
+-- (@-@) is interpreted as @stdin@, any other string is used as a file path.
+parseHandle :: Atto.Parser ProducerGroup
+parseHandle = (<?> "handle reference") $
+    (flip fmap) parseFile $ \case
+      "-" -> PStdin ()
+      fp -> PFile fp
 
 -------------------------------------------------------------------------------
 -- File
