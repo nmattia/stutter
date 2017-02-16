@@ -45,6 +45,17 @@ prepareStdin p = evalStateT (traverse f p) Nothing
         modify (const $ Just bs)
         return bs
 
+cardinality :: ProducerGroup_ a -> Maybe Int
+cardinality (PSum p p') = (+) <$> cardinality p <*> cardinality p'
+cardinality (PProduct p p') = (*) <$> cardinality p <*> cardinality p'
+cardinality (PRanges rs) = pure $ sum $ map rangeCardinality rs
+  where
+    rangeCardinality (IntRange (a,z)) = length [a..z]
+    rangeCardinality (CharRange (a,z)) = length [a..z]
+cardinality PFile{} = Nothing
+cardinality PStdin{} = Nothing
+cardinality PText{} = pure 1
+
 produceRanges :: (Monad m) => [Range] -> Producer m T.Text
 produceRanges = CL.yieldMany
               . concat
