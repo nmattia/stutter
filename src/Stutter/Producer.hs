@@ -11,6 +11,7 @@ import Control.Monad.IO.Class
 import Control.Monad.State
 import Control.Monad.Trans.Resource (MonadResource)
 import Data.Conduit
+import Data.Conduit.Internal (zipSources)
 import Data.Monoid
 import System.IO (stdin)
 
@@ -27,6 +28,7 @@ data Range
 data ProducerGroup_ a
   = PSum (ProducerGroup_ a) (ProducerGroup_ a)
   | PProduct (ProducerGroup_ a) (ProducerGroup_ a)
+  | PZip (ProducerGroup_ a) (ProducerGroup_ a)
   | PRanges [Range]
   | PFile FilePath
   | PStdin a
@@ -48,6 +50,7 @@ prepareStdin p = evalStateT (traverse f p) Nothing
 cardinality :: ProducerGroup_ a -> Maybe Int
 cardinality (PSum p p') = (+) <$> cardinality p <*> cardinality p'
 cardinality (PProduct p p') = (*) <$> cardinality p <*> cardinality p'
+cardinality (PZip p p') = min <$> cardinality p <*> cardinality p'
 cardinality (PRanges rs) = pure $ sum $ map rangeCardinality rs
   where
     rangeCardinality (IntRange (a,z)) = length [a..z]
@@ -68,16 +71,20 @@ produceRanges = CL.yieldMany
 produceGroup
   :: (MonadIO m, MonadResource m)
   => ProducerGroup
-  -> Producer m T.Text
+  -> Source m T.Text
 produceGroup (PRanges rs)      = produceRanges rs
 produceGroup (PText t)         = yield t
 produceGroup (PProduct g g')   = produceGroup g
-                              $= awaitForever (\t -> produceGroup g'
-                             =$= CL.map (t <>))
+                              .| awaitForever ( \t -> (forever $ yield ())
+                              .| produceGroup g'
+                              .| awaitForever (\t' -> yield (t <> t')))
+
 produceGroup (PSum g g')       = produceGroup g >> produceGroup g'
+produceGroup (PZip g g')       = zipSources (produceGroup g) (produceGroup g')
+                              .| CL.map (\(a,b) -> a <> b)
 produceGroup (PFile f)         = CB.sourceFile f
-                              $= CB.lines
-                             =$= CL.decodeUtf8
+                              .| CB.lines
+                              .| CL.decodeUtf8
 produceGroup (PStdin bs)       = CB.sourceLbs bs
-                              $= CB.lines
-                             =$= CL.decodeUtf8
+                              .| CB.lines
+                              .| CL.decodeUtf8

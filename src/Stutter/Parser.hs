@@ -36,6 +36,8 @@ specialChars =
       '+'
     -- Used for product
     , '*'
+    -- Used for zip
+    , '$'
     -- Used to delimit ranges
     , '[', ']'
     -- Used to scope groups
@@ -50,6 +52,7 @@ parseGroup :: Atto.Parser ProducerGroup
 parseGroup = (<?> "producer group") $
     (PSum <$> parseUnit <* Atto.char '+' <*> parseGroup)     <|>
     (PProduct <$> parseUnit <* Atto.char '*' <*> parseGroup) <|>
+    (PZip <$> parseUnit <* Atto.char '$' <*> parseGroup) <|>
     -- Parse product with implicit '*'
     (PProduct <$> parseUnit <*> parseGroup)                  <|>
     parseUnit

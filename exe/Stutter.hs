@@ -22,10 +22,10 @@ main = do
         Left str -> error str
         Right g -> do
           g' <- prepareStdin g
-          runConduitRes $ produceGroup g' =$ CL.mapM_ (liftIO . putStrLn . T.unpack)
+          runConduitRes $ produceGroup g' .| CL.mapM_ (liftIO . putStrLn . T.unpack)
       ["--", a'] -> case parseOnly parseGroup $ T.pack a' of
         Left str -> error str
         Right g -> do
           g' <- prepareStdin g
-          runConduitRes $ produceGroup g' =$ CL.mapM_ (liftIO . putStrLn . T.unpack)
+          runConduitRes $ produceGroup g' .| CL.mapM_ (liftIO . putStrLn . T.unpack)
       _ -> error "bad"
