@@ -16,6 +16,7 @@ data Options = Options
   { showCardinality :: Bool
   , showIntermediate :: Bool
   , allowSloppyParse :: Bool
+  , disableNewLines :: Bool
   , producerGroupExpr :: String
   }
 
@@ -25,7 +26,7 @@ parseCardinality :: Opts.Parser Bool
 parseCardinality =
     Opts.switch
       ( Opts.long "size"
-     <> Opts.long "cardinality"
+     <> Opts.long "length"
      <> Opts.short 'l'
      <> Opts.help "Just show output size"
       )
@@ -42,8 +43,16 @@ allowSloppy :: Opts.Parser Bool
 allowSloppy =
     Opts.switch
       ( Opts.long "sloppy"
-     <> Opts.short 'x'
+     <> Opts.short 's'
      <> Opts.help "Allow parser to parse partially"
+      )
+
+noLn :: Opts.Parser Bool
+noLn =
+    Opts.switch
+      ( Opts.long "no-newlines"
+     <> Opts.short 'n'
+     <> Opts.help "Do not print newlines between outputs"
       )
 
 parseProducerGroup :: Opts.Parser String
@@ -53,7 +62,12 @@ parseProducerGroup =
 
 parseOpts :: Opts.Parser Options
 parseOpts =
-  Options <$> parseCardinality <*> debug <*> allowSloppy <*> parseProducerGroup
+  Options
+    <$> parseCardinality
+    <*> debug
+    <*> allowSloppy
+    <*> noLn
+    <*> parseProducerGroup
 
 withProducerGroup :: Options -> String -> (ProducerGroup -> IO a) -> IO a
 withProducerGroup opts str f =
@@ -85,9 +99,13 @@ main = do
           Just x -> print x
       else withProducerGroup a (producerGroupExpr a) $ \g -> do
         g' <- prepareStdin g
+        let print' =
+             if disableNewLines a
+             then putStr
+             else putStrLn
         runConduitRes
           $ produceGroup g'
-         .| CL.mapM_ (liftIO . putStrLn . T.unpack)
+         .| CL.mapM_ (liftIO . print' . T.unpack)
        )
     where
     opts = Opts.info (parseOpts <**> Opts.helper)
