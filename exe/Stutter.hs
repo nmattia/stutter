@@ -14,6 +14,7 @@ import Stutter.Producer (ProducerGroup_, cardinality, prepareStdin, produceGroup
 
 data Options = Options
   { showCardinality :: Bool
+  , showIntermediate :: Bool
   , producerGroupExpr :: String
   }
 
@@ -28,13 +29,21 @@ parseCardinality =
      <> Opts.help "Just show output size"
       )
 
+debug :: Opts.Parser Bool
+debug =
+    Opts.switch
+      ( Opts.long "debug"
+     <> Opts.short 'd'
+     <> Opts.help "Just print parser output (mostly for debug purposes)"
+      )
+
 parseProducerGroup :: Opts.Parser String
 parseProducerGroup =
     Opts.strArgument
       ( Opts.metavar "EXPR" )
 
 parseOpts :: Opts.Parser Options
-parseOpts = Options <$> parseCardinality <*> parseProducerGroup
+parseOpts = Options <$> parseCardinality <*> debug <*> parseProducerGroup
 
 withProducerGroup :: String -> (ProducerGroup -> IO a) -> IO a
 withProducerGroup str f =
@@ -48,16 +57,21 @@ withProducerGroup str f =
 main :: IO ()
 main = do
     a <- Opts.execParser opts
-    if showCardinality a
+    if showIntermediate a
     then withProducerGroup (producerGroupExpr a) $ \g -> do
-      case cardinality g of
-        Nothing -> putStrLn "?"
-        Just x -> print x
-    else withProducerGroup (producerGroupExpr a) $ \g -> do
-      g' <- prepareStdin g
-      runConduitRes
-        $ produceGroup g'
-       .| CL.mapM_ (liftIO . putStrLn . T.unpack)
+      print g
+    else (
+      if showCardinality a
+      then withProducerGroup (producerGroupExpr a) $ \g -> do
+        case cardinality g of
+          Nothing -> putStrLn "?"
+          Just x -> print x
+      else withProducerGroup (producerGroupExpr a) $ \g -> do
+        g' <- prepareStdin g
+        runConduitRes
+          $ produceGroup g'
+         .| CL.mapM_ (liftIO . putStrLn . T.unpack)
+       )
     where
     opts = Opts.info (parseOpts <**> Opts.helper)
       ( Opts.header "stutter - a string generator" )
