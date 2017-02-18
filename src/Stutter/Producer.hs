@@ -20,6 +20,8 @@ import qualified Data.Conduit.Binary      as CB
 import qualified Data.Conduit.Combinators as CL
 import qualified Data.Text                as T
 
+type Replicator = Int
+
 data Range
   = IntRange (Int, Int)
   | CharRange (Char, Char)
@@ -29,6 +31,7 @@ data ProducerGroup_ a
   = PSum (ProducerGroup_ a) (ProducerGroup_ a)
   | PProduct (ProducerGroup_ a) (ProducerGroup_ a)
   | PZip (ProducerGroup_ a) (ProducerGroup_ a)
+  | PReplicate Replicator (ProducerGroup_ a)
   | PRanges [Range]
   | PFile FilePath
   | PStdin a
@@ -51,6 +54,7 @@ cardinality :: ProducerGroup_ a -> Maybe Int
 cardinality (PSum p p') = (+) <$> cardinality p <*> cardinality p'
 cardinality (PProduct p p') = (*) <$> cardinality p <*> cardinality p'
 cardinality (PZip p p') = min <$> cardinality p <*> cardinality p'
+cardinality (PReplicate n p) = (n *) <$> cardinality p
 cardinality (PRanges rs) = pure $ sum $ map rangeCardinality rs
   where
     rangeCardinality (IntRange (a,z)) = length [a..z]
@@ -82,6 +86,8 @@ produceGroup (PProduct g g')   = produceGroup g
 produceGroup (PSum g g')       = produceGroup g >> produceGroup g'
 produceGroup (PZip g g')       = zipSources (produceGroup g) (produceGroup g')
                               .| CL.map (\(a,b) -> a <> b)
+produceGroup (PReplicate n g)  = produceGroup g
+                              .| awaitForever (CL.yieldMany . replicate n)
 produceGroup (PFile f)         = CB.sourceFile f
                               .| CB.lines
                               .| CL.decodeUtf8

@@ -42,6 +42,8 @@ specialChars =
     , '[', ']'
     -- Used to scope groups
     , '(', ')'
+    -- Used to replicate groups
+    , '{', '}'
     -- Used for escaping
     , '\\'
     -- Used for files
@@ -50,12 +52,29 @@ specialChars =
 
 parseGroup :: Atto.Parser ProducerGroup
 parseGroup = (<?> "producer group") $
-    (PSum <$> parseUnit <* Atto.char '+' <*> parseGroup)     <|>
-    (PProduct <$> parseUnit <* Atto.char '*' <*> parseGroup) <|>
-    (PZip <$> parseUnit <* Atto.char '$' <*> parseGroup) <|>
+    (PSum <$> parseUnit' <* Atto.char '+' <*> parseGroup)     <|>
+    (PProduct <$> parseUnit' <* Atto.char '*' <*> parseGroup) <|>
+    (PZip <$> parseUnit' <* Atto.char '$' <*> parseGroup)     <|>
     -- Parse product with implicit '*'
-    (PProduct <$> parseUnit <*> parseGroup)                  <|>
-    parseUnit
+    (PProduct <$> parseUnit' <*> parseGroup)                  <|>
+    parseUnit'
+  where
+    parseUnit' = parseReplicatedUnit <|> parseUnit
+
+
+
+parseReplicatedUnit :: Atto.Parser ProducerGroup
+parseReplicatedUnit = (<?> "replicated unary producer") $
+    (flip PReplicate <$> parseUnit <*> parseReplicator)
+
+parseReplicator :: Atto.Parser Int
+parseReplicator = Atto.char '{' *> parseInt <* Atto.char '}'
+  where
+    parseInt :: Atto.Parser Int
+    parseInt = (readMaybe . (:[]) <$> Atto.anyChar) >>= \case
+      Nothing -> mzero
+      Just x -> return x
+
 
 parseUnit :: Atto.Parser ProducerGroup
 parseUnit = (<?> "unary producer") $
