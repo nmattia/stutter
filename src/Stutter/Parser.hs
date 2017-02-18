@@ -1,4 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE TupleSections #-}
 
 module Stutter.Parser where
 
@@ -61,20 +62,31 @@ parseGroup = (<?> "producer group") $
   where
     parseUnit' = parseReplicatedUnit <|> parseUnit
 
-
-
 parseReplicatedUnit :: Atto.Parser ProducerGroup
-parseReplicatedUnit = (<?> "replicated unary producer") $
-    (flip PReplicate <$> parseUnit <*> parseReplicator)
+parseReplicatedUnit = (<?> "replicated unary producer") $ do
+    u <- parseUnit
+    (n, s) <- parseReplicator
+    return $ foldr1 s (replicate n u)
 
-parseReplicator :: Atto.Parser Int
-parseReplicator = Atto.char '{' *> parseInt <* Atto.char '}'
+type Squasher = ProducerGroup -> ProducerGroup -> ProducerGroup
+
+parseReplicator :: Atto.Parser (Int, Squasher)
+parseReplicator =
+    Atto.char '{' *>
+      ( flip (,) <$> parseSquasher <* Atto.char '|' <*> parseInt
+    <|> (,PSum) <$> parseInt)
+    <* Atto.char '}'
   where
     parseInt :: Atto.Parser Int
     parseInt = (readMaybe . (:[]) <$> Atto.anyChar) >>= \case
       Nothing -> mzero
       Just x -> return x
-
+    parseSquasher :: Atto.Parser Squasher
+    parseSquasher = Atto.anyChar >>= \case
+      '$' -> return PZip
+      '+' -> return PSum
+      '*' -> return PProduct
+      _ -> mzero
 
 parseUnit :: Atto.Parser ProducerGroup
 parseUnit = (<?> "unary producer") $
@@ -85,7 +97,6 @@ parseUnit = (<?> "unary producer") $
   where
     bracketed :: Atto.Parser a -> Atto.Parser a
     bracketed p = Atto.char '(' *> p <* Atto.char ')'
-
 
 -- | Parse a Handle-like reference, preceded by an @\@@ sign. A single dash
 -- (@-@) is interpreted as @stdin@, any other string is used as a file path.

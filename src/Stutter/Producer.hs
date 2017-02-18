@@ -82,7 +82,6 @@ produceGroup (PProduct g g')   = produceGroup g
                               .| awaitForever ( \t -> (forever $ yield ())
                               .| produceGroup g'
                               .| awaitForever (\t' -> yield (t <> t')))
-
 produceGroup (PSum g g')       = produceGroup g >> produceGroup g'
 produceGroup (PZip g g')       = zipSources (produceGroup g) (produceGroup g')
                               .| CL.map (\(a,b) -> a <> b)
