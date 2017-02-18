@@ -1,6 +1,6 @@
 import Control.Applicative
 import Control.Monad.IO.Class (liftIO)
-import Data.Attoparsec.Text   (parseOnly)
+import Data.Attoparsec.Text   (parseOnly, endOfInput)
 import Data.Conduit
 import Data.Monoid
 import Data.List
@@ -15,6 +15,7 @@ import Stutter.Producer (ProducerGroup_, cardinality, prepareStdin, produceGroup
 data Options = Options
   { showCardinality :: Bool
   , showIntermediate :: Bool
+  , allowSloppyParse :: Bool
   , producerGroupExpr :: String
   }
 
@@ -25,7 +26,7 @@ parseCardinality =
     Opts.switch
       ( Opts.long "size"
      <> Opts.long "cardinality"
-     <> Opts.short 's'
+     <> Opts.short 'l'
      <> Opts.help "Just show output size"
       )
 
@@ -37,36 +38,52 @@ debug =
      <> Opts.help "Just print parser output (mostly for debug purposes)"
       )
 
+allowSloppy :: Opts.Parser Bool
+allowSloppy =
+    Opts.switch
+      ( Opts.long "sloppy"
+     <> Opts.short 'x'
+     <> Opts.help "Allow parser to parse partially"
+      )
+
 parseProducerGroup :: Opts.Parser String
 parseProducerGroup =
     Opts.strArgument
       ( Opts.metavar "EXPR" )
 
 parseOpts :: Opts.Parser Options
-parseOpts = Options <$> parseCardinality <*> debug <*> parseProducerGroup
+parseOpts =
+  Options <$> parseCardinality <*> debug <*> allowSloppy <*> parseProducerGroup
 
-withProducerGroup :: String -> (ProducerGroup -> IO a) -> IO a
-withProducerGroup str f =
-    case parseOnly parseGroup $ T.pack str of
+withProducerGroup :: Options -> String -> (ProducerGroup -> IO a) -> IO a
+withProducerGroup opts str f =
+    case parseOnly parser $ T.pack str of
       Left err -> error $ intercalate " "
         [ "Could not parse producer group:", str
         , "Reason: ", err
         ]
       Right g -> f g
+  where
+    -- If "sloppy" mode is enabled, allow partial parse. Otherwise, request end
+    -- of input.
+    parser =
+      if allowSloppyParse opts
+      then parseGroup
+      else parseGroup <* endOfInput
 
 main :: IO ()
 main = do
     a <- Opts.execParser opts
     if showIntermediate a
-    then withProducerGroup (producerGroupExpr a) $ \g -> do
+    then withProducerGroup a (producerGroupExpr a) $ \g -> do
       print g
     else (
       if showCardinality a
-      then withProducerGroup (producerGroupExpr a) $ \g -> do
+      then withProducerGroup a (producerGroupExpr a) $ \g -> do
         case cardinality g of
           Nothing -> putStrLn "?"
           Just x -> print x
-      else withProducerGroup (producerGroupExpr a) $ \g -> do
+      else withProducerGroup a (producerGroupExpr a) $ \g -> do
         g' <- prepareStdin g
         runConduitRes
           $ produceGroup g'
