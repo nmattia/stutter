@@ -1,31 +1,63 @@
+import Control.Applicative
 import Control.Monad.IO.Class (liftIO)
 import Data.Attoparsec.Text   (parseOnly)
 import Data.Conduit
-import System.Environment     (getArgs)
+import Data.Monoid
+import Data.List
 
 import qualified Data.Conduit.Combinators as CL
 import qualified Data.Text                as T
+import qualified Options.Applicative      as Opts
 
 import Stutter.Parser   (parseGroup)
-import Stutter.Producer (cardinality, prepareStdin, produceGroup)
+import Stutter.Producer (ProducerGroup_, cardinality, prepareStdin, produceGroup)
+
+data Options = Options
+  { showCardinality :: Bool
+  , producerGroupExpr :: String
+  }
+
+type ProducerGroup = ProducerGroup_ ()
+
+parseCardinality :: Opts.Parser Bool
+parseCardinality =
+    Opts.switch
+      ( Opts.long "size"
+     <> Opts.long "cardinality"
+     <> Opts.short 's'
+     <> Opts.help "Just show output size"
+      )
+
+parseProducerGroup :: Opts.Parser String
+parseProducerGroup =
+    Opts.strArgument
+      ( Opts.metavar "EXPR" )
+
+parseOpts :: Opts.Parser Options
+parseOpts = Options <$> parseCardinality <*> parseProducerGroup
+
+withProducerGroup :: String -> (ProducerGroup -> IO a) -> IO a
+withProducerGroup str f =
+    case parseOnly parseGroup $ T.pack str of
+      Left err -> error $ intercalate " "
+        [ "Could not parse producer group:", str
+        , "Reason: ", err
+        ]
+      Right g -> f g
 
 main :: IO ()
 main = do
-    a <- getArgs
-    case a of
-      ["--cardinality", a'] -> case parseOnly parseGroup $ T.pack a' of
-          Left str -> error str
-          Right g -> case cardinality g of
-            Nothing -> putStrLn "?"
-            Just x  -> print x
-      [a'] -> case parseOnly parseGroup $ T.pack a' of
-        Left str -> error str
-        Right g -> do
-          g' <- prepareStdin g
-          runConduitRes $ produceGroup g' .| CL.mapM_ (liftIO . putStrLn . T.unpack)
-      ["--", a'] -> case parseOnly parseGroup $ T.pack a' of
-        Left str -> error str
-        Right g -> do
-          g' <- prepareStdin g
-          runConduitRes $ produceGroup g' .| CL.mapM_ (liftIO . putStrLn . T.unpack)
-      _ -> error "bad"
+    a <- Opts.execParser opts
+    if showCardinality a
+    then withProducerGroup (producerGroupExpr a) $ \g -> do
+      case cardinality g of
+        Nothing -> putStrLn "?"
+        Just x -> print x
+    else withProducerGroup (producerGroupExpr a) $ \g -> do
+      g' <- prepareStdin g
+      runConduitRes
+        $ produceGroup g'
+       .| CL.mapM_ (liftIO . putStrLn . T.unpack)
+    where
+    opts = Opts.info (parseOpts <**> Opts.helper)
+      ( Opts.header "stutter - a string generator" )
