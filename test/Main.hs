@@ -67,7 +67,7 @@ parserTests =
           (PProduct (PText "foo")
                     (PProduct (PText "bar")
                               (PText "baz")))) @=?
-        (Atto.parseOnly Stutter.parseGroup "foo*bar*baz")
+        (Atto.parseOnly Stutter.parseGroup "foo#bar#baz")
     , Tasty.testCase "parses an implicit product" $
         (Right
           (PProduct (PText "foo")

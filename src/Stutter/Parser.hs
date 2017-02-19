@@ -36,9 +36,15 @@ specialChars =
     -- Used for sum
       '|'
     -- Used for product
-    , '*'
+    , '#'
     -- Used for zip
     , '$'
+    -- Used for Kleene plus
+    , '+'
+    -- Used for Kleene start
+    , '*'
+    -- Used for optional
+    , '?'
     -- Used to delimit ranges
     , '[', ']'
     -- Used to scope groups
@@ -58,28 +64,47 @@ parseGroup = (<?> "producer group") $
     parseUnit'
   where
     parseUnit' = parseReplicatedUnit <|> parseUnit
-    -- Default binary function to product (@*@)
+    -- Default binary function to product (@#@)
     parseSquasher' = parseSquasher <|> pure PProduct
 
 parseReplicatedUnit :: Atto.Parser ProducerGroup
-parseReplicatedUnit = (<?> "replicated unary producer") $ do
-    -- This fold shouldn't be in the parser
-    (\u (n,s) -> foldr1 s (replicate n u))
-      <$> parseUnit
-      <*> parseReplicator
+parseReplicatedUnit = (<?> "replicated unary producer") $
+    -- This the logic for the replication shouldn't be in the parser
+      parseUnit <**> parseReplicator
 
 type Squasher = ProducerGroup -> ProducerGroup -> ProducerGroup
+type Replicator = ProducerGroup -> ProducerGroup
 
-parseReplicator :: Atto.Parser (Int, Squasher)
+parseReplicator :: Atto.Parser Replicator
 parseReplicator =
-    Atto.char '{' *>
+    parseKleenePlus <|>
+    parseKleeneStar <|>
+    parseOptional   <|>
+    parseFoldApp
+
+parseKleenePlus :: Atto.Parser Replicator
+parseKleenePlus =
+    Atto.char '+' *> pure (PRepeat)
+
+parseKleeneStar :: Atto.Parser Replicator
+parseKleeneStar =
+    Atto.char '*' *> pure (PSum (PText T.empty) . PRepeat)
+
+parseOptional :: Atto.Parser Replicator
+parseOptional =
+    Atto.char '?' *> pure (PSum (PText T.empty) )
+
+parseFoldApp :: Atto.Parser Replicator
+parseFoldApp =
+    bracketed '{' '}'
       ( flip (,)
         <$> parseSquasher
         <*  Atto.char '|'
         <*> parseInt
     <|> (,PSum) <$> parseInt
       )
-    <* Atto.char '}'
+  <**>
+    (pure (\(n, f) -> foldr1 f . replicate n))
   where
     parseInt :: Atto.Parser Int
     parseInt = (readMaybe . (:[]) <$> Atto.anyChar) >>= \case
@@ -90,7 +115,7 @@ parseSquasher :: Atto.Parser Squasher
 parseSquasher = Atto.anyChar >>= \case
   '|' -> return PSum
   '$' -> return PZip
-  '*' -> return PProduct
+  '#' -> return PProduct
   _ -> mzero
 
 parseUnit :: Atto.Parser ProducerGroup
@@ -98,10 +123,10 @@ parseUnit = (<?> "unary producer") $
     PRanges <$> parseRanges <|>
     parseHandle             <|>
     PText <$> parseText     <|>
-    bracketed parseGroup
-  where
-    bracketed :: Atto.Parser a -> Atto.Parser a
-    bracketed p = Atto.char '(' *> p <* Atto.char ')'
+    bracketed '(' ')' parseGroup
+
+bracketed :: Char -> Char -> Atto.Parser a -> Atto.Parser a
+bracketed cl cr p = Atto.char cl *> p <* Atto.char cr
 
 -- | Parse a Handle-like reference, preceded by an @\@@ sign. A single dash
 -- (@-@) is interpreted as @stdin@, any other string is used as a file path.
