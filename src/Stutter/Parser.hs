@@ -63,9 +63,10 @@ parseGroup = (<?> "producer group") $
 
 parseReplicatedUnit :: Atto.Parser ProducerGroup
 parseReplicatedUnit = (<?> "replicated unary producer") $ do
-    u <- parseUnit
-    (n, s) <- parseReplicator
-    return $ foldr1 s (replicate n u)
+    -- This fold shouldn't be in the parser
+    (\u (n,s) -> foldr1 s (replicate n u))
+      <$> parseUnit
+      <*> parseReplicator
 
 type Squasher = ProducerGroup -> ProducerGroup -> ProducerGroup
 
