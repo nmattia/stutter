@@ -72,8 +72,12 @@ type Squasher = ProducerGroup -> ProducerGroup -> ProducerGroup
 parseReplicator :: Atto.Parser (Int, Squasher)
 parseReplicator =
     Atto.char '{' *>
-      ( flip (,) <$> parseSquasher <* Atto.char '|' <*> parseInt
-    <|> (,PSum) <$> parseInt)
+      ( flip (,)
+        <$> parseSquasher
+        <*  Atto.char '|'
+        <*> parseInt
+    <|> (,PSum) <$> parseInt
+      )
     <* Atto.char '}'
   where
     parseInt :: Atto.Parser Int
