@@ -34,7 +34,7 @@ specialChars :: [Char]
 specialChars =
     [
     -- Used for sum
-      '+'
+      '|'
     -- Used for product
     , '*'
     -- Used for zip
@@ -87,7 +87,7 @@ parseReplicator =
 
 parseSquasher :: Atto.Parser Squasher
 parseSquasher = Atto.anyChar >>= \case
-  '+' -> return PSum
+  '|' -> return PSum
   '$' -> return PZip
   '*' -> return PProduct
   _ -> mzero

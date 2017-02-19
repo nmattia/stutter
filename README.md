@@ -22,7 +22,7 @@ But stutter also knows how to enumerate:
 
 
 ``` shell
-$ stutter 'foo+bar+baz'
+$ stutter 'foo|bar|baz'
 foo
 bar
 baz
@@ -32,7 +32,7 @@ You can easily specify which parts you want to enumerate, and which parts
 should always be there:
 
 ``` shell
-$ stutter 'My name is (what?+who?+Slim Shady)'
+$ stutter 'My name is (what?|who?|Slim Shady)'
 My name is what?
 My name is who?
 My name is Slim Shady
@@ -42,7 +42,7 @@ Stutter can also enumerate file contents:
 
 
 ``` shell
-$ stutter 'foo+bar+baz' > test.txt
+$ stutter 'foo|bar|baz' > test.txt
 $ stutter '(@test.txt) # stutter was here'
 foo # stutter was here
 bar # stutter was here
@@ -82,7 +82,7 @@ f
 
 Of course, it can all be used together:
 ``` shell
-$ stutter 'My name is (@test.txt) [a-c] (who?+what?+Slim Shady)'
+$ stutter 'My name is (@test.txt) [a-c] (who?|what?|Slim Shady)'
 My name is foo a who?
 My name is foo a what?
 My name is foo a Slim Shady

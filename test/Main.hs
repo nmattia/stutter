@@ -43,25 +43,25 @@ parserTests =
         ]
     , Tasty.testCase "parses a sum" $
         (Right $ PSum (PText "foo") (PText "bar"))    @=?
-        (Atto.parseOnly Stutter.parseGroup "foo+bar")
+        (Atto.parseOnly Stutter.parseGroup "foo|bar")
     , Tasty.testCase "parses a multi-sum" $
         (Right
           (PSum (PText "foo")
                 (PSum (PText "bar")
                       (PText "baz")))) @=?
-        (Atto.parseOnly Stutter.parseGroup "foo+(bar+baz)")
+        (Atto.parseOnly Stutter.parseGroup "foo|(bar|baz)")
     , Tasty.testCase "parses a multi-sum bis" $
         (Right
           (PSum (PSum (PText "foo")
                       (PText "bar"))
                 (PText "baz")))                              @=?
-        (Atto.parseOnly Stutter.parseGroup "(foo+bar)+baz")
+        (Atto.parseOnly Stutter.parseGroup "(foo|bar)|baz")
     , Tasty.testCase "parses a multi-sum (right associative)" $
         (Right
           (PSum (PText "foo")
                 (PSum (PText "bar")
                       (PText "baz")))) @=?
-        (Atto.parseOnly Stutter.parseGroup "foo+bar+baz")
+        (Atto.parseOnly Stutter.parseGroup "foo|bar|baz")
     , Tasty.testCase "parses a multi-product (right associative)" $
         (Right
           (PProduct (PText "foo")
