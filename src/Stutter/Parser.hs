@@ -53,14 +53,13 @@ specialChars =
 
 parseGroup :: Atto.Parser ProducerGroup
 parseGroup = (<?> "producer group") $
-    (PSum <$> parseUnit' <* Atto.char '+' <*> parseGroup)     <|>
-    (PProduct <$> parseUnit' <* Atto.char '*' <*> parseGroup) <|>
-    (PZip <$> parseUnit' <* Atto.char '$' <*> parseGroup)     <|>
-    -- Parse product with implicit '*'
-    (PProduct <$> parseUnit' <*> parseGroup)                  <|>
+    (parseUnit' <**> parseSquasher' <*> parseGroup) <|>
+    (PProduct <$> parseUnit' <*> parseGroup) <|>
     parseUnit'
   where
     parseUnit' = parseReplicatedUnit <|> parseUnit
+    -- Default binary function to product (@*@)
+    parseSquasher' = parseSquasher <|> pure PProduct
 
 parseReplicatedUnit :: Atto.Parser ProducerGroup
 parseReplicatedUnit = (<?> "replicated unary producer") $ do
@@ -81,12 +80,13 @@ parseReplicator =
     parseInt = (readMaybe . (:[]) <$> Atto.anyChar) >>= \case
       Nothing -> mzero
       Just x -> return x
-    parseSquasher :: Atto.Parser Squasher
-    parseSquasher = Atto.anyChar >>= \case
-      '$' -> return PZip
-      '+' -> return PSum
-      '*' -> return PProduct
-      _ -> mzero
+
+parseSquasher :: Atto.Parser Squasher
+parseSquasher = Atto.anyChar >>= \case
+  '+' -> return PSum
+  '$' -> return PZip
+  '*' -> return PProduct
+  _ -> mzero
 
 parseUnit :: Atto.Parser ProducerGroup
 parseUnit = (<?> "unary producer") $
