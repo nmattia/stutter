@@ -107,7 +107,7 @@ parseFoldApp =
     (pure (\(n, f) -> foldr1 f . replicate n))
   where
     parseInt :: Atto.Parser Int
-    parseInt = (readMaybe . (:[]) <$> Atto.anyChar) >>= \case
+    parseInt = (readMaybe <$> Atto.many1 Atto.digit) >>= \case
       Nothing -> mzero
       Just x -> return x
 

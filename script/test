@@ -32,7 +32,7 @@ echo "(10,000,000 chars = 9.7M)"
 echo "heap size: 2M"
 m_by_n 1000000 10 \
     | ${STUTTER_EXE} +RTS -M2M -RTS '(@-)-bar' \
-    | wc -c
+    > /dev/null
 
 echo "test constant space stdin zip"
 echo "input: 1,000,000 rows, 10 cols"
@@ -40,7 +40,7 @@ echo "(10,000,000 chars = 9.7M)"
 echo "heap size: 2M"
 m_by_n 1000000 10 \
     | ${STUTTER_EXE} +RTS -M2M -RTS '(@-)$(@-)' \
-    | wc -c
+    > /dev/null
 
 echo "test constant space multiple stdin zip"
 echo "input: 1,000,000 rows, 10 cols"
@@ -48,14 +48,14 @@ echo "(10,000,000 chars = 9.7M)"
 echo "heap size: 2M"
 m_by_n 1000000 10 \
     | ${STUTTER_EXE} +RTS -M2M -RTS '(@-){$|5}' \
-    | wc -c
+    > /dev/null
 
 echo "test constant space file read"
 echo "input: 250 rows, 1,000 cols"
 echo "(250,000 chars = 245K)"
 echo "heap size: 2M"
 ${STUTTER_EXE} +RTS -M2M -RTS "(@${STUTTER_TEST_DATA_DIR}/big_file)" \
-    | wc -c
+    > /dev/null
 
 echo "test constant space file product"
 echo "input: 250 rows, 1,000 cols"
@@ -63,6 +63,4 @@ echo "(250,000 chars = 245K)"
 echo "(total of product: 58M)"
 echo "heap size: 2M"
 ${STUTTER_EXE} +RTS -M2M -RTS "(@${STUTTER_TEST_DATA_DIR}/big_file)(@${STUTTER_TEST_DATA_DIR}/big_file)" \
-    | wc -c
-
-
+    > /dev/null

@@ -7,7 +7,7 @@ Stutter is a string utterer.
 > (www.vocabulary.com)
 
 Stutter takes a string definition and crafts as many different strings as it
-can.
+can. See the [examples](#examples) section below for inspiration.
 
 # Examples
 
@@ -112,4 +112,16 @@ $ stutter '(0b(0|1){#|5})|I know binary!'
 0b11110
 0b11111
 I know binary!
+```
+
+Stutter can repeat a char:
+
+``` shell
+$ stutter 'a{42}'
+a
+a
+a
+...
+$ stutter -n 'a{42}' | wc -c
+42
 ```
