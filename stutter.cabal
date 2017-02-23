@@ -52,6 +52,7 @@ test-suite stutter-test
   build-depends:
                        base
                      , attoparsec
+                     , snipcheck
                      , stutter
                      , tasty
                      , tasty-ant-xml

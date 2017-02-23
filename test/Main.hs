@@ -5,6 +5,7 @@ module Main where
 import Test.Tasty (TestTree, defaultMainWithIngredients, defaultIngredients)
 import Test.Tasty.HUnit ((@=?))
 import Test.Tasty.Runners.AntXML (antXMLRunner)
+import Snipcheck (checkMarkdownFile)
 
 import qualified Data.Attoparsec.Text as Atto
 import qualified Test.Tasty as Tasty
@@ -16,7 +17,11 @@ import qualified Stutter.Parser as Stutter
 
 main :: IO ()
 main =
-    defaultMainWithIngredients (antXMLRunner:defaultIngredients) $ parserTests
+    defaultMainWithIngredients (antXMLRunner:defaultIngredients) $
+      Tasty.testGroup "All tests"
+        [ parserTests
+        , useCases
+        ]
 
 parserTests :: TestTree
 parserTests =
@@ -80,3 +85,8 @@ parserTests =
         (Right $ PStdin ())                 @=?
         (Atto.parseOnly Stutter.parseGroup "@-")
     ]
+
+useCases :: TestTree
+useCases =
+  Tasty.testCase "use cases" $
+    checkMarkdownFile "README.md"

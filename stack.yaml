@@ -1,6 +1,10 @@
 resolver: lts-8.00
 packages:
 - '.'
+- location:
+    git: https://github.com/nmattia/snipcheck.git
+    commit: 9bedf6a5967920f0ec47e2a072220e71e2ce8a94
+  extra-dep: true
 extra-deps: []
 flags: {}
 extra-package-dbs: []
