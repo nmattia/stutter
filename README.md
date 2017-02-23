@@ -43,10 +43,10 @@ Stutter can also enumerate file contents:
 
 ``` shell
 $ stutter 'foo|bar|baz' > test.txt
-$ stutter '(@test.txt) // stutter was here'
-foo // stutter was here
-bar // stutter was here
-baz // stutter was here
+$ stutter '(@test.txt) -- stutter was here'
+foo -- stutter was here
+bar -- stutter was here
+baz -- stutter was here
 ```
 
 And read from `stdin`:
@@ -92,4 +92,24 @@ My name is foo b what?
 My name is baz c who?
 My name is baz c what?
 My name is baz c Slim Shady
+```
+
+Stutter can teach you binary:
+
+``` shell
+$ stutter '(0b(0|1){#|5})|I know binary!'
+0b00000
+0b00001
+0b00010
+0b00011
+0b00100
+0b00101
+...
+0b11010
+0b11011
+0b11100
+0b11101
+0b11110
+0b11111
+I know binary!
 ```
