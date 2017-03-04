@@ -9,6 +9,37 @@ Stutter is a string utterer.
 Stutter takes a string definition and crafts as many different strings as it
 can. See the [examples](#examples) section below for inspiration.
 
+# Building
+
+You need the Haskell build tool
+[stack](https://docs.haskellstack.org/en/stable/README/). Just run:
+
+``` shell
+$ stack build
+```
+
+# Installing
+
+
+You currently need the Haskell build tool
+[stack](https://docs.haskellstack.org/en/stable/README/). Just run:
+
+``` shell
+$ stack install
+```
+
+# Contributing
+
+There are several ways you can contribute:
+
+* Complain: Just [open an issue](https://github.com/nmattia/stutter/issues/new)
+  and let me know what could be improved.
+* Share a use-case: You found a cool case? Great! [open an
+  issue](https://github.com/nmattia/stutter/issues/new) or (even better) a PR
+  with your issue added to the [examples](#examples) below.
+* Support: Share `stutter` with your friends, you never know who might need it.
+* Implement: All PRs are welcome.
+
 # Examples
 
 Stutter can be used as a very simple `echo` clone:
@@ -122,6 +153,6 @@ a
 a
 a
 ...
-$ stutter -n 'a{42}' | wc -c
+$ stutter 'a{42}' | wc -l
 42
 ```
