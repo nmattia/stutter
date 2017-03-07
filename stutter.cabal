@@ -1,7 +1,7 @@
 name:                stutter
 version:             0.1.0.0
-synopsis:            (Stutter Text+String)-Utterer
-description:         Please see README.md
+synopsis:            (Stutter Text|String)-Utterer
+description:         CLI regex-like string generator
 homepage:            https://github.com/nmattia/stutter#readme
 license:             MIT
 license-file:        LICENSE
