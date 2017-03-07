@@ -3,7 +3,7 @@ packages:
 - '.'
 - location:
     git: https://github.com/nmattia/snipcheck.git
-    commit: 9bedf6a5967920f0ec47e2a072220e71e2ce8a94
+    commit: bebddf6e90c9e54b6ab0ab54d5d7455fc7d2e494
   extra-dep: true
 extra-deps: []
 flags: {}
