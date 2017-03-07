@@ -10,6 +10,7 @@ maintainer:          nicolas@nmattia.com
 copyright:           (c) 2017 Nicolas Mattia
 category:            Tools
 build-type:          Simple
+extra-source-files:  README.md
 cabal-version:       >=1.10
 
 library
