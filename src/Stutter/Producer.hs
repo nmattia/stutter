@@ -74,19 +74,23 @@ produceGroup
   :: (MonadIO m, MonadResource m)
   => ProducerGroup
   -> Source m T.Text
-produceGroup (PRanges rs)      = produceRanges rs
-produceGroup (PText t)         = yield t
-produceGroup (PProduct g g')   = produceGroup g
-                              .| awaitForever ( \t -> (forever $ yield ())
-                              .| produceGroup g'
-                              .| awaitForever (\t' -> yield (t <> t')))
-produceGroup (PSum g g')       = produceGroup g >> produceGroup g'
-produceGroup (PZip g g')       = zipSources (produceGroup g) (produceGroup g')
-                              .| CL.map (\(a,b) -> a <> b)
-produceGroup (PRepeat g)       = forever $ produceGroup g
-produceGroup (PFile f)         = CB.sourceFile f
-                              .| CB.lines
-                              .| CL.decodeUtf8
-produceGroup (PStdin bs)       = CB.sourceLbs bs
-                              .| CB.lines
-                              .| CL.decodeUtf8
+produceGroup (PRanges rs) = produceRanges rs
+produceGroup (PText t) = yield t
+produceGroup (PProduct g g') =
+    produceGroup g
+    .| awaitForever ( \t -> forever (yield ())
+    .| produceGroup g'
+    .| awaitForever (\t' -> yield (t <> t')))
+produceGroup (PSum g g') = produceGroup g >> produceGroup g'
+produceGroup (PZip g g') =
+    zipSources (produceGroup g) (produceGroup g')
+    .| CL.map (uncurry (<>))
+produceGroup (PRepeat g) = forever $ produceGroup g
+produceGroup (PFile f) =
+    CB.sourceFile f
+    .| CB.lines
+    .| CL.decodeUtf8
+produceGroup (PStdin bs) =
+    CB.sourceLbs bs
+    .| CB.lines
+    .| CL.decodeUtf8
