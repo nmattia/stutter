@@ -1,5 +1,5 @@
 name:                stutter
-version:             0.1.0.0
+version:             0.1.0.1
 synopsis:            (Stutter Text|String)-Utterer
 description:         CLI regex-like string generator
 homepage:            https://github.com/nmattia/stutter#readme
@@ -53,7 +53,7 @@ test-suite stutter-test
   build-depends:
                        base
                      , attoparsec
-                     , snipcheck
+                     , snipcheck >= 0.1.0.1
                      , stutter
                      , tasty
                      , tasty-ant-xml

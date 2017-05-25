@@ -1,3 +1,8 @@
+---
+sc_check-sections:
+    - examples
+---
+
 # Stutter
 
 Stutter is a string utterer.
@@ -19,7 +24,6 @@ $ stack build
 ```
 
 # Installing
-
 
 You currently need the Haskell build tool
 [stack](https://docs.haskellstack.org/en/stable/README/). Just run:
@@ -51,7 +55,6 @@ Hello, World!
 
 But stutter also knows how to enumerate:
 
-
 ``` shell
 $ stutter 'foo|bar|baz'
 foo
@@ -70,7 +73,6 @@ My name is Slim Shady
 ```
 
 Stutter can also enumerate file contents:
-
 
 ``` shell
 $ stutter 'foo|bar|baz' > test.txt
