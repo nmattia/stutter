@@ -5,6 +5,8 @@ sc_check-sections:
 
 # Stutter
 
+[![Build Status](https://travis-ci.org/nmattia/stutter.svg?branch=master)](https://travis-ci.org/nmattia/stutter)
+
 Stutter is a string utterer.
 
 > utterer: someone who expresses in language; someone who talks (especially
