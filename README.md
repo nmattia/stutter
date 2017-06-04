@@ -16,19 +16,42 @@ Stutter is a string utterer.
 Stutter takes a string definition and crafts as many different strings as it
 can. See the [examples](#examples) section below for inspiration.
 
-# Building
+# Installing
 
-You need the Haskell build tool
-[stack](https://docs.haskellstack.org/en/stable/README/). Just run:
+## Download
+
+You can download the latest release build from the [release
+page](https://github.com/nmattia/stutter/releases). The executable depends on
+the `gmp` library (needed by the Haskell runtime system), which is most likely
+already present on your system. If not, install it from your favorite package
+manager. For Ubuntu:
+
+``` shell
+$ sudo apt-get install libgmp-dev
+```
+
+Make sure `stutter` is on your `PATH`.
+
+## Nix
+
+If you have [nix](http://nixos.org/nix/) installed, you can install `stutter`
+with the following command:
+
+``` shell
+$ nix-env -i stutter
+```
+
+## Building
+
+The recommended way is to build `stutter` with
+[stack](https://docs.haskellstack.org/en/stable/README/). Run the following
+command in the cloned repo:
 
 ``` shell
 $ stack build
 ```
 
-# Installing
-
-You currently need the Haskell build tool
-[stack](https://docs.haskellstack.org/en/stable/README/). Just run:
+You can then install it with
 
 ``` shell
 $ stack install
@@ -177,5 +200,5 @@ $ stutter 'a{42}' | wc -l
 1. Commit the updated `stutter.cabal` file with commit name `Release
    v0.MAJOR.MINOR.PATCH`.
 1. Tag the commit with `git tag v0.MAJOR.MINOR.PATCH`.
-1. Push with `git push --tags`.
+1. Push with `git push --follow-tags`.
 1. Run `stack update --pvp-bounds both .` to upload `stutter` to `hackage`.
