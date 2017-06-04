@@ -81,3 +81,18 @@ script:
        SRC_TGZ=$(cabal info . | awk '{print $2;exit}').tar.gz &&
        (cd dist && cabal install --force-reinstalls "$SRC_TGZ");;
    esac
+
+deploy:
+
+    provider: releases
+
+    # encrypted environment variables are not available for pull requests from
+    # forks.
+    api_key:
+        secure: TrQkoxCtTrqtXNVVV24b1rE6O8Lv1p/x1CwMx/yDoSzCCpBewk3jIr1ExJYHJ+JKXOJQAxuP/7LTJ76crchV7geco4NAycOR9Up1at+dO07eKc9gtm9YrI3+o3Es/zXSH0tN+xM7zYi52vdcFLcFtVVMl6dHaJgeKwQkNDa4/S4BimePzaRTeZ31TJ69fhoLRT30MeFFHLGF7xXRiYm6yu8AirciLfx8F2YzTA4utPpGLQT3tTRUUtsWvOghI+Sd/lJNRp9i9gY1UfbBbIk8dvIFA4fIv6T1OW1ChI4U/2OiDgdBjX9cd8rIBY0sUIHzOGe1p34VetDQrZVf6ERtssUvX2jKoK15kGWeCmaBgDHFfQ9nA/qo+y+GGcTriJtyD10QVsVNRrrVBnntuW01h3/dx3KJ51jiE7E0WyoJhae2vPz4bpjlxOJlCbQ4T18MlH0N7pm5TZwWvgfAXjK6zfhg90h8zrUGXAK1yuPelk9pIBjmIifC/7Iwz5ZcS3Vc0HerUkox84L5gqM6qtxojJyPJesquD7imNFtNTAiHG22k3xz+NrLG1bo2x03MQ1wTZg7D1Vxg7DR5Nts9JTgvxq6ttGfG4UTYAD5L6XFtUWTNRhYcqqZvS5YE68E8V+FX1bbUJMQwlH0lnHNqD9Lo3Q/EHG1I+gS8BnVpZF2q7w=
+    file:
+        - dist/build/stutter/stutter
+    on:
+        tags: true
+        # Only upload the latest cabal generated executable
+        condition : "\"$GHCVER\" = \"8.0.2\" && \"$BUILD\" = \"cabal\""

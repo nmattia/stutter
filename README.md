@@ -160,3 +160,22 @@ a
 $ stutter 'a{42}' | wc -l
 42
 ```
+
+# Release checklist
+
+
+1. Make sure you're on (latest) master.
+
+1. Bump the version in `stutter.cabal`: `0.MAJOR.MINOR.PATCH`.
+
+> Given a version number MAJOR.MINOR.PATCH, increment the:
+>
+> MAJOR version when you make incompatible API changes,
+> MINOR version when you add functionality in a backwards-compatible manner, and
+> PATCH version when you make backwards-compatible bug fixes.
+
+1. Commit the updated `stutter.cabal` file with commit name `Release
+   v0.MAJOR.MINOR.PATCH`.
+1. Tag the commit with `git tag v0.MAJOR.MINOR.PATCH`.
+1. Push with `git push --tags`.
+1. Run `stack update --pvp-bounds both .` to upload `stutter` to `hackage`.
