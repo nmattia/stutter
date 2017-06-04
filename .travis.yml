@@ -1,0 +1,83 @@
+# Inspired from commercialhaskell/stack
+#
+# Here, we test with both stack and cabal. The reasons to test with cabal are
+# twofold:
+#
+# 1. We want to ensure that the bootstrapping case works
+#
+# 2. Building with stack would be too easy a test, since it guarantees us a
+# sane build environment. In CI, we want to make our life more difficult, so we
+# use cabal without any Stackage snapshots.
+#
+language: c
+sudo: false
+
+cache:
+    directories:
+        - $HOME/.ghc
+        - $HOME/.cabal
+        - $HOME/.stack
+
+matrix:
+  include:
+
+    - env: BUILD=cabal CABALVER=1.24 GHCVER=8.0.2
+      compiler: ": #GHC 8.0.2"
+      addons: {apt: {packages: [cabal-install-1.24,ghc-8.0.2,happy-1.19.5], sources: [hvr-ghc]}}
+
+    - env: BUILD=stack GHCVER=8.0.2 STACK_YAML=stack.yaml
+      compiler: ": #stack 8.0.2"
+      addons: {apt: {packages: [cabal-install-head,ghc-8.0.2,happy-1.19.5], sources: [hvr-ghc]}}
+
+    - env: BUILD=stack-osx STACK_YAML=stack.yaml
+      compiler: ": #stack osx latest"
+      os: osx
+
+# Note: the distinction between `before_install` and `install` is not important.
+# - in before_install we install build tools
+# - in install we install (haskell) dependencies
+before_install:
+ - unset CC
+ - export PATH=/opt/happy/1.19.5/bin:$PATH
+ - case "$BUILD" in
+     stack)
+       export PATH=$HOME/.local/bin:/opt/ghc/$GHCVER/bin:$PATH;;
+     stack-osx)
+       export PATH=$HOME/.local/bin:$PATH;;
+     cabal)
+       export PATH=$HOME/.cabal/bin:/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH;;
+   esac
+ - ./.travis-setup.sh
+
+install:
+ - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
+ - case "$BUILD" in
+     stack)
+       stack --system-ghc --compiler ghc-"$GHCVER" --no-terminal test --only-dependencies;;
+     stack-osx)
+       stack --no-system-ghc --no-terminal test --only-dependencies;;
+     cabal)
+       cabal --version;
+       travis_retry cabal update;
+       rm -f $(stack path --dist-dir)/stack-*.tar.gz;
+       stack sdist --pvp-bounds=both;
+       tar xf $(stack path --dist-dir)/stack-*.tar.gz --wildcards --strip-components=1 '*/stack.cabal';
+       cabal install --only-dependencies --enable-tests --enable-benchmarks --force-reinstalls --ghc-options=-O0;;
+   esac
+
+script:
+ - case "$BUILD" in
+     stack)
+       stack --system-ghc --compiler ghc-"$GHCVER" --no-terminal test --haddock --no-haddock-deps;;
+     stack-osx)
+       stack --no-system-ghc --no-terminal test --haddock --no-haddock-deps;;
+     cabal)
+       cabal configure --enable-tests --enable-benchmarks -v2 --ghc-options="-O0 -Werror";
+       cabal build;
+       cabal test;
+       cabal check;
+       cabal sdist;
+       cabal copy;
+       SRC_TGZ=$(cabal info . | awk '{print $2;exit}').tar.gz &&
+       (cd dist && cabal install --force-reinstalls "$SRC_TGZ");;
+   esac
