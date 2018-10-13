@@ -78,7 +78,7 @@ produceGroup (PRanges rs) = produceRanges rs
 produceGroup (PText t) = yield t
 produceGroup (PProduct g g') =
     produceGroup g
-    .| awaitForever ( \t -> forever (yield ())
+    .| awaitForever (\t -> forever (yield ())
     .| produceGroup g'
     .| awaitForever (\t' -> yield (t <> t')))
 produceGroup (PSum g g') = produceGroup g >> produceGroup g'
