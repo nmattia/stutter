@@ -15,12 +15,12 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:     src/
-  ghc-options:         -Wall -Werror
+  ghc-options:         -Wall
   exposed-modules:
                       Stutter.Parser
                       Stutter.Producer
   build-depends:
-                       base
+                       base < 5
                      , attoparsec
                      , bytestring
                      , conduit
@@ -35,9 +35,9 @@ library
 executable stutter
   main-is:             Stutter.hs
   hs-source-dirs:      exe/
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N1 -Wall -Werror
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N1 -Wall
   build-depends:
-                       base
+                       base < 5
                      , attoparsec
                      , conduit
                      , conduit-combinators
@@ -49,7 +49,7 @@ executable stutter
 test-suite stutter-test
   main-is:             Main.hs
   hs-source-dirs:      test/
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall -Werror
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall
   type:                exitcode-stdio-1.0
   build-depends:
                        base

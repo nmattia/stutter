@@ -201,4 +201,5 @@ $ stutter 'a{42}' | wc -l
    v0.MAJOR.MINOR.PATCH`.
 1. Tag the commit with `git tag v0.MAJOR.MINOR.PATCH`.
 1. Push with `git push --follow-tags`.
-1. Run `stack update --pvp-bounds both .` to upload `stutter` to `hackage`.
+1. Run `cabal sdist` and `cabal upload --publish ./dist/stutter...` to upload
+   `stutter` to `hackage`.
