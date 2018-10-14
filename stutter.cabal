@@ -35,7 +35,7 @@ library
 executable stutter
   main-is:             Stutter.hs
   hs-source-dirs:      exe/
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall -Werror
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N1 -Wall -Werror
   build-depends:
                        base
                      , attoparsec
