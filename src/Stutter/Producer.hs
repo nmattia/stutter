@@ -7,12 +7,12 @@
 
 module Stutter.Producer where
 
+import Control.Monad.Catch (MonadThrow)
 import Control.Monad.IO.Class
 import Control.Monad.State
 import Control.Monad.Trans.Resource (MonadResource)
 import Data.Conduit
 import Data.Conduit.Internal (zipSources)
-import Data.Monoid
 import System.IO (stdin)
 
 import qualified Data.ByteString.Lazy     as BL
@@ -61,7 +61,7 @@ cardinality PFile{} = Nothing
 cardinality PStdin{} = Nothing
 cardinality PText{} = pure 1
 
-produceRanges :: (Monad m) => [Range] -> Producer m T.Text
+produceRanges :: (Monad m) => [Range] -> ConduitT () T.Text m ()
 produceRanges = CL.yieldMany
               . concat
               . map rangeToList
@@ -71,14 +71,14 @@ produceRanges = CL.yieldMany
     tshow = T.pack . show
 
 produceGroup
-  :: (MonadIO m, MonadResource m)
+  :: (MonadIO m, MonadResource m, MonadThrow m)
   => ProducerGroup
-  -> Source m T.Text
+  -> ConduitT () T.Text m ()
 produceGroup (PRanges rs) = produceRanges rs
 produceGroup (PText t) = yield t
 produceGroup (PProduct g g') =
     produceGroup g
-    .| awaitForever ( \t -> forever (yield ())
+    .| awaitForever (\t -> forever (yield ())
     .| produceGroup g'
     .| awaitForever (\t' -> yield (t <> t')))
 produceGroup (PSum g g') = produceGroup g >> produceGroup g'

@@ -2,7 +2,6 @@ import Control.Applicative
 import Control.Monad.IO.Class (liftIO)
 import Data.Attoparsec.Text   (parseOnly, endOfInput)
 import Data.Conduit
-import Data.Monoid
 import Data.List
 
 import qualified Data.Conduit.Combinators as CL

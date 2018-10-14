@@ -1,7 +1,0 @@
-resolver: lts-8.15
-packages:
-- '.'
-extra-deps:
-    - snipcheck-0.1.0.2
-flags: {}
-extra-package-dbs: []

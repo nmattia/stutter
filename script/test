@@ -1,4 +1,9 @@
-#!/usr/bin/env bash
+#!/usr/bin/env nix-shell
+#!nix-shell -i bash
+#!nix-shell -I nixpkgs=./nix
+#!nix-shell -p stutter
+#!nix-shell --pure
+# vim: ft=sh sw=2 et
 
 set -e
 
@@ -24,7 +29,7 @@ if [ ! -f test-data/big_file ]; then
     m_by_n 250 1000 > ${STUTTER_TEST_DATA_DIR}/big_file
 fi
 
-STUTTER_EXE=${STUTTER_EXE:-"stack exec stutter -- +RTS -K1k -RTS"}
+STUTTER_EXE=${STUTTER_EXE:-"stutter +RTS -K1k -RTS"}
 
 echo "test constant space one stdin"
 echo "input: 1,000,000 rows, 10 cols"
