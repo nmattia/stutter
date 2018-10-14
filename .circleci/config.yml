@@ -36,6 +36,11 @@ jobs:
             . ~/.nix-profile/etc/profile.d/nix.sh
             nix-build --no-out-link --option sandbox true
       - run:
+          name: Run tests
+          command: |
+            . ~/.nix-profile/etc/profile.d/nix.sh
+            ./script/test
+      - run:
           name: Create cache
           command: |
             . ~/.nix-profile/etc/profile.d/nix.sh
