@@ -1,5 +1,7 @@
 #!/usr/bin/env nix-shell
-#!nix-shell -i bash -p bash nix curl jq --pure
+#!nix-shell -i bash
+#!nix-shell --keep GITHUB_TOKEN
+#!nix-shell -p bash nix curl jq git gitAndTools.hub
 # vim: filetype=sh
 set -euo pipefail
 
@@ -9,6 +11,11 @@ banner() {
     echo
 }
 
+create_pr() {
+    git checkout -b update
+    git commit -am "Update dependencies"
+    hub pull-request -m "Update dependencies" --push
+}
 
 update() {
     local versions="$1"
@@ -52,6 +59,24 @@ update() {
     echo "$res" > $versions
 }
 
+DO_CREATE_PR=false
+
+while [[ $# -gt 0 ]]
+do
+key="$1"
+
+case $key in
+    --pr)
+    DO_CREATE_PR="true"
+    shift
+    ;;
+    *)
+    >&2 echo "Could not parse argument: $key"
+    exit 1
+    ;;
+esac
+done
+
 ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/.. >/dev/null && pwd )"
 VERSIONS_DEF="$ROOT/nix/versions.json"
 PACKAGES_DEF="$(cat $VERSIONS_DEF | jq -r 'keys | .[]')"
@@ -73,3 +98,10 @@ for p in $PACKAGES; do
     banner "$p"
     update "$VERSIONS" "$p"
 done
+
+if [ "$DO_CREATE_PR" == "true" ]; then
+    echo "Creating PR"
+    create_pr
+else
+    echo "not creating PR."
+fi
