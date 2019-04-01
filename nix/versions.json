@@ -3,8 +3,8 @@
     "owner": "NixOS",
     "repo": "nixpkgs-channels",
     "branch": "nixos-18.09",
-    "rev": "15f08994517a695efa5e9b216c5caaf497a10019",
-    "sha256": "04y5car353rwnx5hysdc6i5j04hp7bbxnc228fa6r332iiwrj2zg"
+    "rev": "43ba99fa0354421dace7072ea4639d14bbb94f50",
+    "sha256": "124w60i6rwj91l0vlz6vklmk82mbw7v30rqqs17rj6wqn57948wx"
   },
   "snipcheck": {
     "owner": "nmattia",
