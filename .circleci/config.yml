@@ -12,24 +12,6 @@ jobs:
             sudo chown circleci /nix
             bash <(curl https://nixos.org/nix/install)
       - checkout
-      - restore_cache:
-            # Match on the latest cache for this branch
-          keys:
-              - v1-stutter-{{ .Branch }}-
-              - v1-stutter-master-
-
-      - run:
-          name: Warm up cache
-          command: |
-              . ~/.nix-profile/etc/profile.d/nix.sh
-              cache_path=~/.nix-build-cache-export.gz
-              if [ -f "$cache_path" ]; then
-                echo "Loading cache..."
-                zcat $cache_path | nix-store --import
-                echo "done"
-              else
-                echo "Cache does not exist yet"
-              fi
       - run:
           name: Nix build
           command: |
@@ -40,30 +22,6 @@ jobs:
           command: |
             . ~/.nix-profile/etc/profile.d/nix.sh
             ./script/test
-      - run:
-          name: Create cache
-          command: |
-            . ~/.nix-profile/etc/profile.d/nix.sh
-            echo "Generating cache list"
-            nix-instantiate \
-                | xargs nix-store -qR --include-outputs \
-                > ~/.nix-build-cache-export-list.txt
-            echo -n "Done: "; cat ~/.nix-build-cache-export-list.txt | wc -l
-            echo "Generating cache file"
-            cat ~/.nix-build-cache-export-list.txt \
-                | nix-store --export `xargs` \
-                | gzip -c \
-                > ~/.nix-build-cache-export.gz
-            echo "done"
-
-      - store_artifacts:
-          path: ~/.nix-build-cache-export-list.txt
-          destination: export-list.txt
-
-      - save_cache:
-          key: v1-stutter-{{ .Branch }}-{{ .BuildNum }}
-          paths:
-              - ~/.nix-build-cache-export.gz
 
 workflows:
   version: 2
