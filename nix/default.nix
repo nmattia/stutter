@@ -1,6 +1,10 @@
+{}:
 let
-  fetch = import ./fetch.nix;
-in { nixpkgs ? fetch "nixpkgs" }: import nixpkgs {
-  config = { allowUnfree = true; };
-  overlays = import ./overlays.nix { inherit fetch; };
-}
+  sources = import ./sources.nix;
+  pkgs = import sources.nixpkgs
+    {
+      config = { allowUnfree = true; };
+      overlays = import ./overlays.nix { inherit sources; };
+    };
+in
+pkgs // { niv = pkgs.haskellPackages.niv; }
