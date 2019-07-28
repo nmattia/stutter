@@ -1,4 +1,4 @@
-{ fetch ? import ./fetch.nix }:
+{ sources }:
 [
   # Some extra sources
   (self: super:
@@ -26,7 +26,8 @@
 
                   src = self.lib.cleanSource ../.;
                 };
-              snipcheck = fetch "snipcheck";
+              inherit (sources) snipcheck;
+              niv = (import sources.niv { pkgs = super; }).niv-source;
             }
           );
     }

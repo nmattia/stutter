@@ -1,0 +1,38 @@
+{
+    "niv": {
+        "branch": "master",
+        "description": "Easy dependency management for Nix projects",
+        "homepage": "https://github.com/nmattia/niv",
+        "owner": "nmattia",
+        "repo": "niv",
+        "rev": "8b7b70465c130d8d7a98fba1396ad1481daee518",
+        "sha256": "0fgdrxn2vzpnzr6pxaiyn5zzbd812c6f7xjjhfir0kpzamjnxwwl",
+        "type": "tarball",
+        "url": "https://github.com/nmattia/niv/archive/8b7b70465c130d8d7a98fba1396ad1481daee518.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "nixpkgs": {
+        "branch": "nixos-18.09",
+        "description": "Nixpkgs/NixOS branches that track the Nixpkgs/NixOS channels",
+        "homepage": null,
+        "owner": "NixOS",
+        "repo": "nixpkgs-channels",
+        "rev": "a7e559a5504572008567383c3dc8e142fa7a8633",
+        "sha256": "16j95q58kkc69lfgpjkj76gw5sx8rcxwi3civm0mlfaxxyw9gzp6",
+        "type": "tarball",
+        "url": "https://github.com/NixOS/nixpkgs-channels/archive/a7e559a5504572008567383c3dc8e142fa7a8633.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "snipcheck": {
+        "branch": "master",
+        "description": "Check embedded snippets",
+        "homepage": null,
+        "owner": "nmattia",
+        "repo": "snipcheck",
+        "rev": "915d47b8c3371e6662096715ed5f9935d9456afe",
+        "sha256": "1nkxm1kl0zgl8bl0vanamlzjk9kvs4q0h9iknzdhjxmsrlcdm9jk",
+        "type": "tarball",
+        "url": "https://github.com/nmattia/snipcheck/archive/915d47b8c3371e6662096715ed5f9935d9456afe.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    }
+}
