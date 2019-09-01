@@ -203,3 +203,4 @@ $ stutter 'a{42}' | wc -l
 1. Push with `git push --follow-tags`.
 1. Run `cabal sdist` and `cabal upload --publish ./dist/stutter...` to upload
    `stutter` to `hackage`.
+foo
