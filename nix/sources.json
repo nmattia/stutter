@@ -29,10 +29,10 @@
         "homepage": null,
         "owner": "nmattia",
         "repo": "snipcheck",
-        "rev": "c724a6689c20356c448010806271bf3f408d4404",
-        "sha256": "1sk1mkjnxykzf5zpp2bl3jssi7afiims8i01gn029zzdqbmhc772",
+        "rev": "cce0ae0ed32f8492fd88a939f071ecd93874fbe9",
+        "sha256": "1gpyr3qbvimskhcvjhhv4xn1v20za720zc5j09psmjg2h39ha7by",
         "type": "tarball",
-        "url": "https://github.com/nmattia/snipcheck/archive/c724a6689c20356c448010806271bf3f408d4404.tar.gz",
+        "url": "https://github.com/nmattia/snipcheck/archive/cce0ae0ed32f8492fd88a939f071ecd93874fbe9.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     }
 }
